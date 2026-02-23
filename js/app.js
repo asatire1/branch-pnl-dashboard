@@ -342,6 +342,13 @@ const App = (() => {
     }
 
     const file = fileInput.files[0];
+    if (!file.name.match(/\.xlsx?$/i)) {
+      statusEl.textContent = 'Please select an .xlsx or .xls file.';
+      statusEl.className = 'upload-status error';
+      return;
+    }
+
+    const file = fileInput.files[0];
     const quarterId = `${year}-${quarter}`;
     const label = `${quarter} ${year}`;
 

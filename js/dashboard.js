@@ -80,8 +80,12 @@ const Dashboard = (() => {
     if (visible && visible.length > 0) {
       filteredDynamic = dynamic.filter(c => visible.includes(c.key));
     } else {
-      // Default: show pharmacy_services_income and payroll if they exist
-      const defaults = ['pharmacy_services_income', 'payroll', 'payroll_expense'];
+      // Default: show key financial columns
+      const defaults = [
+        'pharmacy_services_income', 'payroll_and_related_expenses',
+        'total_revenue', 'total_cost_of_revenue', 'gross_profit',
+        'total_operating_expenses', 'net_income_loss'
+      ];
       filteredDynamic = dynamic.filter(c => defaults.includes(c.key));
       // If no defaults match, show first 5
       if (filteredDynamic.length === 0) {
@@ -265,8 +269,8 @@ const Dashboard = (() => {
     });
 
     // Summary
-    const incomeKey = findKey(['pharmacy_services_income', 'pharmacy_income']);
-    const payrollKey = findKey(['payroll', 'payroll_expense']);
+    const incomeKey = findKey(['pharmacy_services_income', 'pharmacy_income', 'total_revenue']);
+    const payrollKey = findKey(['payroll_and_related_expenses', 'payroll', 'payroll_expense']);
 
     const ti = filtered.reduce((s, d) => {
       const val = incomeKey && d.lineItems ? (d.lineItems[incomeKey] || 0) : 0;
