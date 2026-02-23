@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allied Pharmacies - Branch P&L Dashboard</title>
+<link rel="stylesheet" href="css/styles.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<!-- SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- PDF Export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h1>Allied Pharmacies</h1>
+    <p>Branch P&L Dashboard</p>
+    <form id="loginForm" autocomplete="off">
+      <input type="password" id="passwordInput" placeholder="Enter password" autofocus>
+      <button type="submit" id="loginBtn">Sign In</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" class="dashboard" style="display:none">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <h1>Allied Pharmacies - Branch P&L Dashboard</h1>
+      <div class="quarter-picker">
+        <label>Quarter</label>
+        <select id="quarterPicker">
+          <option value="">No quarters uploaded</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button class="btn btn-primary" id="uploadQuarterBtn">Upload Quarter</button>
+      <button class="btn" id="manageGroupsBtn">Manage Groups</button>
+      <button class="btn" id="columnPickerBtn">Column Picker</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-excel" id="exportExcelBtn">Export Excel</button>
+      <button class="btn btn-csv" id="exportCsvBtn">Export CSV</button>
+      <button class="btn btn-pdf" id="exportPdfBtn">Export PDF</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>Company</label>
+      <select id="companyFilter"><option value="">All Companies</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Branch</label>
+      <select id="branchFilter"><option value="">All Branches</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Group</label>
+      <select id="groupFilter"><option value="">All Groups</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Search</label>
+      <input type="text" id="searchInput" placeholder="Type branch name...">
+    </div>
+    <div class="filter-group">
+      <label>Show</label>
+      <select id="showFilter">
+        <option value="all">All Branches</option>
+        <option value="profitable">Profitable Only</option>
+        <option value="loss">Loss-Making Only</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary">
+    <div class="card income">
+      <div class="label">Total Pharmacy Services Income</div>
+      <div class="value" id="totalIncome">-</div>
+      <div class="sub" id="totalIncomeSub"></div>
+    </div>
+    <div class="card expense">
+      <div class="label">Total Payroll Expense</div>
+      <div class="value" id="totalPayroll">-</div>
+      <div class="sub" id="totalPayrollSub"></div>
+    </div>
+    <div class="card count">
+      <div class="label">Branches Shown</div>
+      <div class="value" id="branchCount">0</div>
+      <div class="sub" id="branchCountSub"></div>
+    </div>
+  </div>
+
+  <!-- Main Table -->
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead id="mainTableHead">
+        <tr></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">
+    Branches with negative Cost of Goods Sold are highlighted. COGS removed and net profit reduced accordingly.
+  </div>
+
+  <!-- Archived Section -->
+  <div class="archived-section">
+    <button class="archived-toggle" id="archivedToggle" style="display:none"></button>
+    <div class="archived-content" id="archivedContent">
+      <table>
+        <thead id="archivedTableHead">
+          <tr></tr>
+        </thead>
+        <tbody id="archivedBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="empty-state" style="display:none">
+    <h2>No Quarters Uploaded</h2>
+    <p>Click "Upload Quarter" to get started by uploading a quarterly Excel file.</p>
+  </div>
+</div>
+
+<!-- ===== UPLOAD MODAL ===== -->
+<div id="uploadModal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Upload Quarter</h2>
+      <button class="modal-close" id="uploadModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Quarter</label>
+        <div class="quarter-select-row">
+          <select id="uploadYear">
+            <option value="2024">2024</option>
+            <option value="2025" selected>2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+          </select>
+          <select id="uploadQuarter">
+            <option value="Q1">Q1 (Jan-Mar)</option>
+            <option value="Q2">Q2 (Apr-Jun)</option>
+            <option value="Q3" selected>Q3 (Jul-Sep)</option>
+            <option value="Q4">Q4 (Oct-Dec)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Excel File (.xlsx)</label>
+        <input type="file" id="uploadFile" accept=".xlsx,.xls">
+      </div>
+      <div id="uploadStatus" class="upload-status"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="uploadCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="uploadConfirmBtn">Upload & Parse</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== COLUMN PICKER MODAL ===== -->
+<div id="columnPickerModal" class="modal-overlay" style="display:none">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2>Column Visibility</h2>
+      <button class="modal-close" id="columnPickerClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="column-picker-actions">
+        <button class="btn btn-sm" id="colSelectAll">Select All</button>
+        <button class="btn btn-sm" id="colDeselectAll">Deselect All</button>
+      </div>
+      <div id="columnPickerList" class="column-picker-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="columnPickerCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="columnPickerSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GROUPS MODAL ===== -->
+<div id="groupsModal" class="modal-overlay" style="display:none">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2>Manage Groups</h2>
+      <button class="modal-close" id="groupsModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="groupsList" class="groups-list"></div>
+      <button class="btn btn-primary" id="addGroupBtn" style="margin-top:12px">+ Add Group</button>
+      <!-- Group editor (shows when adding/editing) -->
+      <div id="groupEditor" class="group-editor" style="display:none">
+        <hr>
+        <h3 id="groupEditorTitle">New Group</h3>
+        <div class="form-group">
+          <label>Group Name</label>
+          <input type="text" id="groupName" placeholder="e.g. Core Branches">
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="color" id="groupColor" value="#2563eb">
+        </div>
+        <div class="form-group">
+          <label>Companies (select multiple)</label>
+          <select id="groupCompanies" multiple size="5"></select>
+        </div>
+        <div class="form-group">
+          <label>Branches (select multiple)</label>
+          <select id="groupBranches" multiple size="8"></select>
+        </div>
+        <div class="group-editor-actions">
+          <button class="btn" id="groupEditorCancel">Cancel</button>
+          <button class="btn btn-primary" id="groupEditorSave">Save Group</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="groupsModalDoneBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPORT COLUMN PICKER MODAL ===== -->
+<div id="exportColModal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Select Export Columns</h2>
+      <button class="modal-close" id="exportColModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="column-picker-actions">
+        <button class="btn btn-sm" id="exportColSelectAll">Select All</button>
+        <button class="btn btn-sm" id="exportColDeselectAll">Deselect All</button>
+      </div>
+      <div id="exportColList" class="column-picker-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="exportColCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="exportColConfirmBtn">Export</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/excel-parser.js"></script>
+<script src="js/data-store.js"></script>
+<script src="js/groups.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/export.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

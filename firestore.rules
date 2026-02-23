@@ -1,0 +1,25 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Config docs (auth, companyMap, branchIds, columnVisibility)
+    match /config/{document=**} {
+      allow read, write: if true;
+    }
+
+    // Quarter data and branch state subcollections
+    match /quarters/{document=**} {
+      allow read, write: if true;
+    }
+
+    // Groups
+    match /groups/{document=**} {
+      allow read, write: if true;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
