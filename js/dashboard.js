@@ -82,9 +82,8 @@ const Dashboard = (() => {
     } else {
       // Default: show key financial columns
       const defaults = [
-        'pharmacy_services_income', 'payroll_and_related_expenses',
-        'total_revenue', 'total_cost_of_revenue', 'gross_profit',
-        'total_operating_expenses', 'net_income_loss'
+        'pharmacy_services_income', 'total_revenue',
+        'payroll_and_related_expenses', 'net_income_loss'
       ];
       filteredDynamic = dynamic.filter(c => defaults.includes(c.key));
       // If no defaults match, show first 5
@@ -177,7 +176,7 @@ const Dashboard = (() => {
         if (isArchived) {
           html += `<td><button class="unarchive-btn" data-branch="${escaped}">Restore</button></td>`;
         } else {
-          html += `<td><button class="archive-btn" data-branch="${escaped}" title="Archive branch">\u2716</button></td>`;
+          html += `<td><button class="archive-btn" data-branch="${escaped}" title="Archive branch">Archive</button></td>`;
         }
       } else {
         // Dynamic numeric column
