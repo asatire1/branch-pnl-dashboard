@@ -95,6 +95,32 @@ const Dashboard = (() => {
     return [...fixed, ...filteredDynamic, ...end];
   }
 
+  // Short display names for common columns
+  const SHORT_LABELS = {
+    'pharmacy_services_income': 'Pharmacy Services',
+    'payroll_and_related_expenses': 'Payroll',
+    'net_income_loss': 'Net Income',
+    'total_revenue': 'Total Revenue',
+    'total_cost_of_revenue': 'Cost of Revenue',
+    'total_operating_expenses': 'Operating Expenses',
+    'gross_profit': 'Gross Profit',
+    'general_and_administrative_expenses': 'General & Admin',
+    'marketing_and_advertising_expenses': 'Marketing',
+    'utilities_and_facilities': 'Utilities',
+    'operating_and_maintenance_expenses': 'Operating & Maint.',
+    'management_fees': 'Management Fees',
+    'taxes_and_insurance': 'Taxes & Insurance',
+    'cost_of_sales__rebates': 'COGS Rebates',
+    'cost_of_products_revenue': 'COGS Products',
+    'cost_of_goods_sold': 'COGS',
+    'nhs_sales': 'NHS Sales',
+    'nhs_sales__drug_and_appliance': 'NHS Drug & Appliance',
+    'nhs_sales__prescription_fees': 'NHS Rx Fees',
+    'till_takings': 'Till Takings',
+    'interest_expenses': 'Interest',
+    'total_other_income_expense': 'Other Income/Exp',
+  };
+
   // ===== RENDERING =====
   function buildTableHeaders(containerId) {
     const columns = getVisibleColumns();
@@ -103,7 +129,7 @@ const Dashboard = (() => {
 
     columns.forEach(col => {
       const th = document.createElement('th');
-      th.textContent = col.label;
+      th.textContent = SHORT_LABELS[col.key] || col.label;
 
       if (col.type === 'num' || col.type === 'text') {
         th.dataset.col = col.key;
