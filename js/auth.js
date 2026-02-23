@@ -21,14 +21,32 @@ const Auth = (() => {
     sessionStorage.setItem(SESSION_KEY, 'true');
   }
 
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out. Check your internet connection.')), ms)
+      )
+    ]);
+  }
+
   async function login(password) {
     const inputHash = await hashPassword(password);
 
     try {
-      const doc = await configRef.doc('auth').get();
+      // Check Firebase is loaded
+      if (typeof firebase === 'undefined' || typeof db === 'undefined') {
+        return { success: false, error: 'Firebase not loaded. Refresh and try again.' };
+      }
+
+      console.log('[Auth] Attempting Firestore read...');
+      const doc = await withTimeout(configRef.doc('auth').get(), 15000);
+      console.log('[Auth] Firestore response received. Doc exists:', doc.exists);
+
       if (!doc.exists) {
         // If no auth doc exists, first login sets the password
-        await configRef.doc('auth').set({ passwordHash: inputHash });
+        console.log('[Auth] No auth doc found. Setting password...');
+        await withTimeout(configRef.doc('auth').set({ passwordHash: inputHash }), 15000);
         setAuthenticated();
         return { success: true };
       }
@@ -41,8 +59,8 @@ const Auth = (() => {
         return { success: false, error: 'Incorrect password' };
       }
     } catch (err) {
-      console.error('Auth error:', err);
-      return { success: false, error: 'Connection error. Check Firebase config.' };
+      console.error('[Auth] Error:', err);
+      return { success: false, error: err.message || 'Connection error. Check Firebase config.' };
     }
   }
 
