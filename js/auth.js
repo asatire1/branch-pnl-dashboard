@@ -52,6 +52,9 @@ const Auth = (() => {
       }
 
       const storedHash = doc.data().passwordHash;
+      console.log('[Auth] Input hash:', inputHash);
+      console.log('[Auth] Stored hash:', storedHash);
+      console.log('[Auth] Match:', inputHash === storedHash);
       if (inputHash === storedHash) {
         setAuthenticated();
         return { success: true };
