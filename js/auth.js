@@ -3,7 +3,7 @@
  * Password hash stored in Firestore config/auth document.
  */
 const Auth = (() => {
-  const SESSION_KEY = 'pnl_authenticated';
+  const SESSION_KEY = 'pnl_auth_v2';
 
   async function hashPassword(password) {
     const encoder = new TextEncoder();
