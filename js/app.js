@@ -245,6 +245,7 @@ const App = (() => {
     Export.init();
     initUploadModal();
     initColumnPicker();
+    initBulkArchive();
     initQuarterPicker();
 
     // Load most recent quarter if available
@@ -304,6 +305,160 @@ const App = (() => {
     updateQuarterPicker();
     Dashboard.updateFilters();
     Dashboard.render();
+  }
+
+  // ===== BULK ARCHIVE =====
+  function initBulkArchive() {
+    document.getElementById('bulkArchiveBtn').addEventListener('click', openBulkArchive);
+    document.getElementById('bulkArchiveClose').addEventListener('click', closeBulkArchive);
+    document.getElementById('bulkArchiveCancelBtn').addEventListener('click', closeBulkArchive);
+    document.getElementById('bulkArchiveConfirmBtn').addEventListener('click', confirmBulkArchive);
+    document.getElementById('bulkArchiveSelectUnknown').addEventListener('click', selectUnknownCompanies);
+    document.getElementById('bulkArchiveSelectNone').addEventListener('click', deselectAllBulk);
+
+    document.getElementById('bulkArchiveModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('bulkArchiveModal')) closeBulkArchive();
+    });
+  }
+
+  function openBulkArchive() {
+    if (!AppState.currentQuarter || !AppState.currentQuarter.branches) return;
+    renderBulkArchiveList();
+    document.getElementById('bulkArchiveModal').style.display = 'flex';
+  }
+
+  function closeBulkArchive() {
+    document.getElementById('bulkArchiveModal').style.display = 'none';
+  }
+
+  function renderBulkArchiveList() {
+    const branches = AppState.currentQuarter.branches;
+    // Group by company
+    const byCompany = {};
+    for (const b of branches) {
+      const co = b.company || 'Unknown';
+      if (!byCompany[co]) byCompany[co] = [];
+      byCompany[co].push(b);
+    }
+
+    const companies = Object.keys(byCompany).sort();
+    const list = document.getElementById('bulkArchiveList');
+
+    list.innerHTML = companies.map(co => {
+      const coBranches = byCompany[co];
+      const coId = co.replace(/[^a-zA-Z0-9]/g, '_');
+      return `
+        <div class="bulk-archive-company">
+          <div class="bulk-archive-company-header">
+            <input type="checkbox" id="ba_co_${coId}" data-company="${escapeAttr(co)}" class="ba-company-cb">
+            <label for="ba_co_${coId}">${escapeHtml(co)}</label>
+            <span class="count">(${coBranches.length} branches)</span>
+          </div>
+          <div class="bulk-archive-branches">
+            ${coBranches.map(b => {
+              const bId = b.branchName.replace(/[^a-zA-Z0-9]/g, '_');
+              const isArchived = (AppState.branchStates[b.branchName] || {}).archived;
+              return `
+                <div class="bulk-archive-branch${isArchived ? ' already-archived' : ''}">
+                  <input type="checkbox" id="ba_br_${bId}" data-branch="${escapeAttr(b.branchName)}" class="ba-branch-cb" data-company="${escapeAttr(co)}" ${isArchived ? 'checked disabled' : ''}>
+                  <label for="ba_br_${bId}">${escapeHtml(b.branchName)}${isArchived ? ' (archived)' : ''}</label>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Wire up company checkboxes to toggle their branches
+    list.querySelectorAll('.ba-company-cb').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const company = e.target.dataset.company;
+        const checked = e.target.checked;
+        list.querySelectorAll(`.ba-branch-cb[data-company="${CSS.escape(company)}"]:not(:disabled)`).forEach(brCb => {
+          brCb.checked = checked;
+        });
+        updateBulkSummary();
+      });
+    });
+
+    list.querySelectorAll('.ba-branch-cb').forEach(cb => {
+      cb.addEventListener('change', updateBulkSummary);
+    });
+
+    updateBulkSummary();
+  }
+
+  function updateBulkSummary() {
+    const checked = document.querySelectorAll('#bulkArchiveList .ba-branch-cb:checked:not(:disabled)');
+    const count = checked.length;
+    document.getElementById('bulkArchiveSummary').textContent =
+      count > 0 ? `${count} branch${count !== 1 ? 'es' : ''} selected for archiving` : 'Select branches to archive';
+  }
+
+  function selectUnknownCompanies() {
+    const list = document.getElementById('bulkArchiveList');
+    // Check the "Unknown" company checkbox
+    list.querySelectorAll('.ba-company-cb').forEach(cb => {
+      if (cb.dataset.company === 'Unknown') {
+        cb.checked = true;
+        cb.dispatchEvent(new Event('change'));
+      }
+    });
+  }
+
+  function deselectAllBulk() {
+    document.querySelectorAll('#bulkArchiveList .ba-company-cb').forEach(cb => {
+      cb.checked = false;
+    });
+    document.querySelectorAll('#bulkArchiveList .ba-branch-cb:not(:disabled)').forEach(cb => {
+      cb.checked = false;
+    });
+    updateBulkSummary();
+  }
+
+  async function confirmBulkArchive() {
+    const toArchive = [];
+    document.querySelectorAll('#bulkArchiveList .ba-branch-cb:checked:not(:disabled)').forEach(cb => {
+      toArchive.push(cb.dataset.branch);
+    });
+
+    if (toArchive.length === 0) {
+      alert('No branches selected.');
+      return;
+    }
+
+    if (!confirm(`Archive ${toArchive.length} branch${toArchive.length !== 1 ? 'es' : ''}?`)) return;
+
+    const btn = document.getElementById('bulkArchiveConfirmBtn');
+    btn.disabled = true;
+    btn.textContent = `Archiving ${toArchive.length}...`;
+
+    // Archive in batches
+    for (const branchName of toArchive) {
+      if (!AppState.branchStates[branchName]) AppState.branchStates[branchName] = {};
+      AppState.branchStates[branchName].archived = true;
+      if (AppState.currentQuarterId) {
+        await DataStore.saveBranchState(AppState.currentQuarterId, branchName, AppState.branchStates[branchName]);
+      }
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Archive Selected';
+    closeBulkArchive();
+    Dashboard.render();
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function escapeAttr(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;');
   }
 
   // ===== UPLOAD MODAL =====

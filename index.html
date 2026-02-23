@@ -54,6 +54,7 @@
       <button class="btn btn-primary" id="uploadQuarterBtn">Upload Quarter</button>
       <button class="btn" id="manageGroupsBtn">Manage Groups</button>
       <button class="btn" id="columnPickerBtn">Column Picker</button>
+      <button class="btn btn-danger" id="bulkArchiveBtn">Bulk Archive</button>
     </div>
     <div class="toolbar-right">
       <button class="btn btn-excel" id="exportExcelBtn">Export Excel</button>
@@ -240,6 +241,28 @@
     </div>
     <div class="modal-footer">
       <button class="btn" id="groupsModalDoneBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BULK ARCHIVE MODAL ===== -->
+<div id="bulkArchiveModal" class="modal-overlay" style="display:none">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2>Bulk Archive</h2>
+      <button class="modal-close" id="bulkArchiveClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="bulk-archive-actions">
+        <button class="btn btn-sm" id="bulkArchiveSelectUnknown">Select All "Unknown" Company</button>
+        <button class="btn btn-sm" id="bulkArchiveSelectNone">Deselect All</button>
+      </div>
+      <div class="bulk-archive-summary" id="bulkArchiveSummary"></div>
+      <div id="bulkArchiveList" class="bulk-archive-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="bulkArchiveCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="bulkArchiveConfirmBtn">Archive Selected</button>
     </div>
   </div>
 </div>

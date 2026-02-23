@@ -374,6 +374,79 @@ td.num {
   font-style: italic;
 }
 
+/* ===== BULK ARCHIVE ===== */
+.bulk-archive-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.bulk-archive-summary {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 10px;
+  min-height: 20px;
+}
+.bulk-archive-list {
+  max-height: 450px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+.bulk-archive-company {
+  border-bottom: 1px solid #eee;
+}
+.bulk-archive-company:last-child {
+  border-bottom: none;
+}
+.bulk-archive-company-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8f9fb;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  user-select: none;
+}
+.bulk-archive-company-header:hover {
+  background: #eef0f4;
+}
+.bulk-archive-company-header input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+.bulk-archive-company-header .count {
+  color: #888;
+  font-weight: 400;
+  font-size: 12px;
+}
+.bulk-archive-branches {
+  padding: 0;
+}
+.bulk-archive-branch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 32px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.bulk-archive-branch:hover {
+  background: #f0f4ff;
+}
+.bulk-archive-branch input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+.bulk-archive-branch.already-archived {
+  opacity: 0.5;
+}
+.bulk-archive-branch.already-archived label {
+  text-decoration: line-through;
+}
+
 /* ===== EMPTY STATE ===== */
 .empty-state {
   text-align: center;
