@@ -276,7 +276,7 @@ tbody tr:hover { background: #f8faff; }
 tbody tr.negative-cogs { background: #fffbeb; }
 tbody tr.negative-cogs:hover { background: #fef3c7; }
 td.num {
-  text-align: right;
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
