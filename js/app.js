@@ -348,7 +348,6 @@ const App = (() => {
       return;
     }
 
-    const file = fileInput.files[0];
     const quarterId = `${year}-${quarter}`;
     const label = `${quarter} ${year}`;
 
