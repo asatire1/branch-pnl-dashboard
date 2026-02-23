@@ -293,16 +293,18 @@ const Dashboard = (() => {
       return sortDir === 'asc' ? va - vb : vb - va;
     });
 
-    // Summary
-    const incomeKey = findKey(['pharmacy_services_income', 'pharmacy_income', 'total_revenue']);
-    const payrollKey = findKey(['payroll_and_related_expenses', 'payroll', 'payroll_expense']);
+    // Summary — calculated only from visible (non-archived, filtered) branches
+    const incomeKey = findKeyFromData(filtered, ['pharmacy_services_income', 'pharmacy_income', 'total_revenue']);
+    const payrollKey = findKeyFromData(filtered, ['payroll_and_related_expenses', 'payroll', 'payroll_expense']);
 
     const ti = filtered.reduce((s, d) => {
-      const val = incomeKey && d.lineItems ? (d.lineItems[incomeKey] || 0) : 0;
+      if (!d.lineItems) return s;
+      const val = incomeKey ? (d.lineItems[incomeKey] || 0) : 0;
       return s + val;
     }, 0);
     const tp = filtered.reduce((s, d) => {
-      const val = payrollKey && d.lineItems ? (d.lineItems[payrollKey] || 0) : 0;
+      if (!d.lineItems) return s;
+      const val = payrollKey ? (d.lineItems[payrollKey] || 0) : 0;
       return s + val;
     }, 0);
     const pct = ti > 0 ? ((tp / ti) * 100).toFixed(1) : '0.0';
@@ -351,6 +353,21 @@ const Dashboard = (() => {
     if (!AppState.currentQuarter || !AppState.currentQuarter.lineItemKeys) return null;
     for (const k of candidates) {
       if (AppState.currentQuarter.lineItemKeys.includes(k)) return k;
+    }
+    return null;
+  }
+
+  // Search actual branch data for matching keys (more robust than lineItemKeys array)
+  function findKeyFromData(branches, candidates) {
+    // First try the lineItemKeys array
+    const fromMeta = findKey(candidates);
+    if (fromMeta) return fromMeta;
+    // Fallback: scan branch lineItems for matching keys
+    for (const b of branches) {
+      if (!b.lineItems) continue;
+      for (const k of candidates) {
+        if (k in b.lineItems) return k;
+      }
     }
     return null;
   }
