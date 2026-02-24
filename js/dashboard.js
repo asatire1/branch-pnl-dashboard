@@ -457,6 +457,7 @@ const Dashboard = (() => {
       const c = document.getElementById('archivedContent');
       c.classList.toggle('open');
       renderArchived();
+      attachTableEvents();
     });
   }
 
