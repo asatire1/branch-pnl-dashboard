@@ -93,11 +93,12 @@ const Export = (() => {
 
   function confirmExport() {
     selectedExportColumns = getSelectedExportColumns();
+    const type = pendingExportType;
     closeExportDialog();
 
-    if (pendingExportType === 'excel') doExportExcel();
-    else if (pendingExportType === 'csv') doExportCSV();
-    else if (pendingExportType === 'pdf') doExportPDF();
+    if (type === 'excel') doExportExcel();
+    else if (type === 'csv') doExportCSV();
+    else if (type === 'pdf') doExportPDF();
   }
 
   function getExportData() {

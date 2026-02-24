@@ -308,6 +308,50 @@ const DEFAULT_GROUPS = [
       "Ynysybwl",
       "Ystrad Mynach"
     ]
+  },
+  {
+    name: "Oakfield",
+    color: "#16a34a",
+    companies: [],
+    branches: [
+      "Seven Hills Pharmacy",
+      "Woodhouse/Market Square",
+      "Blackthorn Pharmacy",
+      "Upwell Street Pharmacy",
+      "Parson Cross Pharmacy",
+      "Newgate Street Pharmacy (Oakfield)",
+      "Celtic Point",
+      "Gleadless Road Pharmacy",
+      "Burngreave Road Pharmacy",
+      "Queensway Pharmacy",
+      "Skelton Lane Pharmacy",
+      "Aberrhondda Road",
+      "Hannah Street",
+      "Llanrumney",
+      "Bridge Street",
+      "Llandysul",
+      "Aberaeron",
+      "67 Sway Road",
+      "50 Sway Road",
+      "Firth Park Road Pharmacy",
+      "Ellesmere Road",
+      "Handsworth Road Pharmacy",
+      "Scotter Road Pharmacy",
+      "Stocksbridge",
+      "Church Street Pharmacy (Oakfield)",
+      "Goole",
+      "Kenfig Hill Pharmacy",
+      "Canton - Landsdowne Health Centre",
+      "Aston (Oakfield)",
+      "Allied Pharmacy Aberystwyth",
+      "Allied Pharmacy Strawberry Place",
+      "Allied Pharmacy Fairwater",
+      "Allied Pharmacy Riversdale",
+      "Allied Pharmacy Padarn (Qam) (Wales)",
+      "Allied Pharmacy Riversdale (Qam) (Wales)",
+      "Allied Pharmacy Strawberry Place (Qam) (Wales)",
+      "Allied Pharmacy Fairwater (Qam) (Wales)"
+    ]
   }
 ];
 
