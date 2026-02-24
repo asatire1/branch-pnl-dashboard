@@ -211,6 +211,97 @@ const DEFAULT_BRANCH_IDS = {
   "Charles Street": "20034"
 };
 
+const DEFAULT_GROUPS = [
+  {
+    name: "Sharief HC",
+    color: "#2563eb",
+    companies: [],
+    branches: [
+      "Abergele",
+      "Acklam Road Pharmacy",
+      "Alsager Pharmacy",
+      "Balls Road",
+      "Birchgrove",
+      "Bloomfield Road",
+      "Borsdane Avenue",
+      "Bromborough Pharmacy",
+      "Buckly (Alltami Road)",
+      "Caerphilly",
+      "Cainscross Pharmacy",
+      "Callington",
+      "Chain Lane",
+      "Chapel Lane",
+      "Charles Street",
+      "Cholsey Pharmacy",
+      "Cop Lane",
+      "Higgins Pharmacy",
+      "Dalton",
+      "Davyhulme Medical Centre",
+      "Durrington",
+      "Earlham West",
+      "Ebbw Vale",
+      "Elmer Road",
+      "Fairfield",
+      "Fazakerley",
+      "Ferndown",
+      "Allied Pharmacy Fleetwood Road North",
+      "Frome",
+      "West Derby Road Pharmacy Green Lane",
+      "Heavitree",
+      "Highbridge",
+      "Holton Road (Sharief)",
+      "Huyton",
+      "Kirkham",
+      "Allied Pharmacy Knowsley Road",
+      "Layton Pharmacy",
+      "Liphook",
+      "Loftus",
+      "Marsh Street",
+      "Merthyr Road",
+      "Millstream Pharmacy",
+      "Moore Street (was Knowsley Road)",
+      "Morrison Road",
+      "Mountain Ash",
+      "New Romney",
+      "Newtown",
+      "North Cornelly",
+      "Norwood Avenue",
+      "Old Swan",
+      "Ormesby Pharmacy",
+      "Par Pharmacy",
+      "Park South",
+      "Penzance",
+      "Perranporth",
+      "Pikes Lane Pharmacy",
+      "Pontycymmer",
+      "Port Talbot",
+      "RHIWBINA",
+      "Rhyl",
+      "Ribbleton",
+      "Sandy Lane",
+      "Shepway",
+      "St Blazey (Sharief)",
+      "Stevenage",
+      "Teanlowe Centre",
+      "Tennant Street",
+      "Allied Pharmacy Thornton",
+      "Torrington",
+      "Trentham Road Pharmacy",
+      "Tuebrook Pharmacy",
+      "Union Square",
+      "Upton Rocks",
+      "Varo Terrace",
+      "Waterfront (Sharief)",
+      "Waterloo Road",
+      "Whitby",
+      "Whitegate Drive",
+      "Yarm Lane",
+      "Ynysybwl",
+      "Ystrad Mynach"
+    ]
+  }
+];
+
 // ===== APP MODULE =====
 const App = (() => {
 
@@ -230,6 +321,14 @@ const App = (() => {
     AppState.visibleColumns = colVis;
     AppState.quarters = quarters;
     AppState.groups = groups;
+
+    // Seed default groups if none exist in Firestore
+    if (groups.length === 0 && DEFAULT_GROUPS.length > 0) {
+      for (const g of DEFAULT_GROUPS) {
+        const savedId = await DataStore.saveGroup({ ...g });
+        AppState.groups.push({ ...g, id: savedId });
+      }
+    }
 
     // If first run, save defaults to Firestore
     if (Object.keys(companyMap).length === 0) {
