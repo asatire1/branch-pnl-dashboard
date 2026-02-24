@@ -258,6 +258,7 @@ const DEFAULT_GROUPS = [
       "ZHeavitree Health Centre",
       "Highbridge",
       "Holton Road (Sharief)",
+      "Holton Road (Barry)",
       "Huyton",
       "Kirkham",
       "Allied Pharmacy Knowsley Road",
