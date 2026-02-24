@@ -344,6 +344,7 @@ const DEFAULT_GROUPS = [
       "Goole",
       "Kenfig Hill Pharmacy",
       "Canton - Landsdowne Health Centre",
+      "Church Street Post Office",
       "Aston (Oakfield)",
       "Allied Pharmacy Aberystwyth",
       "Allied Pharmacy Strawberry Place",
