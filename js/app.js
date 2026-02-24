@@ -329,22 +329,19 @@ const App = (() => {
     AppState.quarters = quarters;
     AppState.groups = groups;
 
-    // Seed default groups if they don't already exist in Firestore
-    console.log('[Groups] Loaded from Firestore:', AppState.groups.length, 'groups', AppState.groups.map(g => g.name));
+    // Ensure default groups exist and have correct branches
     for (const dg of DEFAULT_GROUPS) {
-      const exists = AppState.groups.some(g => g.name === dg.name);
-      console.log('[Groups] Default group "' + dg.name + '" exists:', exists);
-      if (!exists) {
-        try {
-          const savedId = await DataStore.saveGroup({ ...dg });
-          AppState.groups.push({ ...dg, id: savedId });
-          console.log('[Groups] Created "' + dg.name + '" with ID:', savedId);
-        } catch (err) {
-          console.error('[Groups] Failed to create "' + dg.name + '":', err);
-        }
+      const existing = AppState.groups.find(g => g.name === dg.name);
+      if (existing) {
+        // Update existing group's branches to match defaults
+        existing.branches = dg.branches;
+        existing.companies = dg.companies || [];
+        await DataStore.saveGroup(existing);
+      } else {
+        const savedId = await DataStore.saveGroup({ ...dg });
+        AppState.groups.push({ ...dg, id: savedId });
       }
     }
-    console.log('[Groups] Final groups:', AppState.groups.length, AppState.groups.map(g => g.name));
 
     // Merge defaults into Firestore (ensures new entries are added)
     const mergedCompanyMap = { ...DEFAULT_COMPANY_MAP, ...companyMap };
@@ -370,6 +367,11 @@ const App = (() => {
     // Load most recent quarter if available
     if (AppState.quarters.length > 0) {
       await switchQuarter(AppState.quarters[0].id);
+      // Debug: log all branch names from loaded data
+      if (AppState.currentQuarter && AppState.currentQuarter.branches) {
+        const allNames = AppState.currentQuarter.branches.map(b => b.branchName).sort();
+        console.log('[Debug] All branch names in data (' + allNames.length + '):', JSON.stringify(allNames));
+      }
     } else {
       Dashboard.render();
     }
