@@ -294,6 +294,8 @@ const DEFAULT_GROUPS = [
       "Teanlowe Centre",
       "Tennant Street",
       "Allied Pharmacy Thornton",
+      "Thornton Medical Centre (Fleetwood Rd)",
+      "Thornton Victoria Road",
       "Torrington",
       "Trentham Road Pharmacy",
       "Tuebrook Pharmacy",
