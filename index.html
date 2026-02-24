@@ -230,8 +230,9 @@
           <select id="groupCompanies" multiple size="5"></select>
         </div>
         <div class="form-group">
-          <label>Branches (select multiple)</label>
-          <select id="groupBranches" multiple size="8"></select>
+          <label>Branches (<span id="groupBranchCount">0</span> selected)</label>
+          <input type="text" id="groupBranchSearch" placeholder="Search branches...">
+          <div id="groupBranchList" class="group-branch-list"></div>
         </div>
         <div class="group-editor-actions">
           <button class="btn" id="groupEditorCancel">Cancel</button>

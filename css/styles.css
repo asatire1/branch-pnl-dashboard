@@ -663,6 +663,37 @@ td.num {
   justify-content: flex-end;
   margin-top: 12px;
 }
+.group-branch-list {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-top: 6px;
+  padding: 4px;
+}
+.group-branch-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.group-branch-item:hover {
+  background: #f0f4ff;
+}
+.group-branch-item input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+.group-branch-item label {
+  cursor: pointer;
+  flex: 1;
+}
+#groupBranchSearch {
+  margin-top: 6px;
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {

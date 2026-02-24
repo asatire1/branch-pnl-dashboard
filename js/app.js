@@ -377,15 +377,10 @@ const App = (() => {
     AppState.quarters = quarters;
     AppState.groups = groups;
 
-    // Ensure default groups exist and have correct branches
+    // Create default groups if they don't exist yet
     for (const dg of DEFAULT_GROUPS) {
-      const existing = AppState.groups.find(g => g.name === dg.name);
-      if (existing) {
-        // Update existing group's branches to match defaults
-        existing.branches = dg.branches;
-        existing.companies = dg.companies || [];
-        await DataStore.saveGroup(existing);
-      } else {
+      const exists = AppState.groups.some(g => g.name === dg.name);
+      if (!exists) {
         const savedId = await DataStore.saveGroup({ ...dg });
         AppState.groups.push({ ...dg, id: savedId });
       }

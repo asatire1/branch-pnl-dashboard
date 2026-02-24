@@ -3,6 +3,7 @@
  */
 const Groups = (() => {
   let editingGroupId = null;
+  let selectedBranches = new Set();
 
   function init() {
     document.getElementById('manageGroupsBtn').addEventListener('click', openModal);
@@ -16,11 +17,13 @@ const Groups = (() => {
     document.getElementById('groupsModal').addEventListener('click', (e) => {
       if (e.target === document.getElementById('groupsModal')) closeModal();
     });
+
+    // Branch search filter
+    document.getElementById('groupBranchSearch').addEventListener('input', renderBranchCheckboxes);
   }
 
   function openModal() {
     renderGroupsList();
-    populateEditorSelects();
     cancelEdit();
     document.getElementById('groupsModal').style.display = 'flex';
   }
@@ -60,17 +63,60 @@ const Groups = (() => {
 
   function populateEditorSelects() {
     const companies = getAvailableCompanies();
-    const branches = getAvailableBranches();
-
     const compSel = document.getElementById('groupCompanies');
     compSel.innerHTML = companies.map(c =>
       `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`
     ).join('');
+  }
 
-    const brSel = document.getElementById('groupBranches');
-    brSel.innerHTML = branches.map(b =>
-      `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`
-    ).join('');
+  function renderBranchCheckboxes() {
+    const branches = getAvailableBranches();
+    const search = document.getElementById('groupBranchSearch').value.toLowerCase();
+    const listEl = document.getElementById('groupBranchList');
+
+    // Sort: selected first, then alphabetical
+    const sorted = [...branches].sort((a, b) => {
+      const aSelected = selectedBranches.has(a);
+      const bSelected = selectedBranches.has(b);
+      if (aSelected && !bSelected) return -1;
+      if (!aSelected && bSelected) return 1;
+      return a.localeCompare(b);
+    });
+
+    const filtered = sorted.filter(b => !search || b.toLowerCase().includes(search));
+
+    listEl.innerHTML = filtered.map(b => {
+      const checked = selectedBranches.has(b) ? 'checked' : '';
+      const id = 'gb_' + b.replace(/[^a-zA-Z0-9]/g, '_');
+      return `
+        <div class="group-branch-item">
+          <input type="checkbox" id="${id}" value="${escapeHtml(b)}" ${checked}>
+          <label for="${id}">${escapeHtml(b)}</label>
+        </div>
+      `;
+    }).join('');
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = '<p style="color:#888;font-size:12px;padding:8px">No branches match.</p>';
+    }
+
+    // Wire up checkbox events
+    listEl.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          selectedBranches.add(e.target.value);
+        } else {
+          selectedBranches.delete(e.target.value);
+        }
+        updateBranchCount();
+      });
+    });
+
+    updateBranchCount();
+  }
+
+  function updateBranchCount() {
+    document.getElementById('groupBranchCount').textContent = selectedBranches.size;
   }
 
   function getAvailableCompanies() {
@@ -87,6 +133,7 @@ const Groups = (() => {
     editingGroupId = groupId;
     const editor = document.getElementById('groupEditor');
     editor.style.display = 'block';
+    populateEditorSelects();
 
     if (groupId) {
       const group = AppState.groups.find(g => g.id === groupId);
@@ -101,22 +148,23 @@ const Groups = (() => {
         opt.selected = (group.companies || []).includes(opt.value);
       });
 
-      // Select branches
-      const brSel = document.getElementById('groupBranches');
-      Array.from(brSel.options).forEach(opt => {
-        opt.selected = (group.branches || []).includes(opt.value);
-      });
+      // Set selected branches
+      selectedBranches = new Set(group.branches || []);
     } else {
       document.getElementById('groupEditorTitle').textContent = 'New Group';
       document.getElementById('groupName').value = '';
       document.getElementById('groupColor').value = '#2563eb';
       document.getElementById('groupCompanies').selectedIndex = -1;
-      document.getElementById('groupBranches').selectedIndex = -1;
+      selectedBranches = new Set();
     }
+
+    document.getElementById('groupBranchSearch').value = '';
+    renderBranchCheckboxes();
   }
 
   function cancelEdit() {
     editingGroupId = null;
+    selectedBranches = new Set();
     document.getElementById('groupEditor').style.display = 'none';
   }
 
@@ -129,7 +177,7 @@ const Groups = (() => {
 
     const color = document.getElementById('groupColor').value;
     const companies = Array.from(document.getElementById('groupCompanies').selectedOptions).map(o => o.value);
-    const branches = Array.from(document.getElementById('groupBranches').selectedOptions).map(o => o.value);
+    const branches = [...selectedBranches];
 
     const group = {
       id: editingGroupId,
