@@ -254,7 +254,8 @@ const DEFAULT_GROUPS = [
       "Allied Pharmacy Fleetwood Road North",
       "Frome",
       "West Derby Road Pharmacy Green Lane",
-      "Heavitree",
+      "ZFore Street - Heavitree",
+      "ZHeavitree Health Centre",
       "Highbridge",
       "Holton Road (Sharief)",
       "Huyton",
@@ -288,7 +289,7 @@ const DEFAULT_GROUPS = [
       "Sandy Lane",
       "Shepway",
       "St Blazey (Sharief)",
-      "Stevenage",
+      "Stevenage Pharmacy",
       "Teanlowe Centre",
       "Tennant Street",
       "Allied Pharmacy Thornton",
@@ -367,11 +368,6 @@ const App = (() => {
     // Load most recent quarter if available
     if (AppState.quarters.length > 0) {
       await switchQuarter(AppState.quarters[0].id);
-      // Debug: log all branch names from loaded data
-      if (AppState.currentQuarter && AppState.currentQuarter.branches) {
-        const allNames = AppState.currentQuarter.branches.map(b => b.branchName).sort();
-        console.log('[Debug] All branch names in data (' + allNames.length + '):', JSON.stringify(allNames));
-      }
     } else {
       Dashboard.render();
     }
