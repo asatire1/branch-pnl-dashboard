@@ -330,13 +330,21 @@ const App = (() => {
     AppState.groups = groups;
 
     // Seed default groups if they don't already exist in Firestore
+    console.log('[Groups] Loaded from Firestore:', AppState.groups.length, 'groups', AppState.groups.map(g => g.name));
     for (const dg of DEFAULT_GROUPS) {
       const exists = AppState.groups.some(g => g.name === dg.name);
+      console.log('[Groups] Default group "' + dg.name + '" exists:', exists);
       if (!exists) {
-        const savedId = await DataStore.saveGroup({ ...dg });
-        AppState.groups.push({ ...dg, id: savedId });
+        try {
+          const savedId = await DataStore.saveGroup({ ...dg });
+          AppState.groups.push({ ...dg, id: savedId });
+          console.log('[Groups] Created "' + dg.name + '" with ID:', savedId);
+        } catch (err) {
+          console.error('[Groups] Failed to create "' + dg.name + '":', err);
+        }
       }
     }
+    console.log('[Groups] Final groups:', AppState.groups.length, AppState.groups.map(g => g.name));
 
     // Merge defaults into Firestore (ensures new entries are added)
     const mergedCompanyMap = { ...DEFAULT_COMPANY_MAP, ...companyMap };
