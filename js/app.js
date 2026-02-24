@@ -126,7 +126,14 @@ const DEFAULT_COMPANY_MAP = {
   "Tintagel": "Sharief Healthcare Limited",
   "iPharm Pharmacy": "Sharief Healthcare Limited",
   "Field Team": "Sharief Healthcare Limited",
-  "Ipharm Stock Warehouse": "Sharief Healthcare Limited"
+  "Ipharm Stock Warehouse": "Sharief Healthcare Limited",
+  "Fazakerley": "Sharief Healthcare Limited",
+  "Heavitree": "Sharief Healthcare Limited",
+  "Liphook": "Sharief Healthcare Limited",
+  "New Romney": "Sharief Healthcare Limited",
+  "Pontycymmer": "Sharief Healthcare Limited",
+  "Rhyl": "Sharief Healthcare Limited",
+  "Stevenage": "Sharief Healthcare Limited"
 };
 
 const DEFAULT_BRANCH_IDS = {
@@ -315,27 +322,32 @@ const App = (() => {
       DataStore.loadGroups()
     ]);
 
-    // Merge defaults with any Firestore overrides
-    AppState.companyMap = Object.keys(companyMap).length > 0 ? companyMap : DEFAULT_COMPANY_MAP;
-    AppState.branchIds = Object.keys(branchIds).length > 0 ? branchIds : DEFAULT_BRANCH_IDS;
+    // Merge defaults with Firestore overrides (Firestore values take precedence)
+    AppState.companyMap = { ...DEFAULT_COMPANY_MAP, ...companyMap };
+    AppState.branchIds = { ...DEFAULT_BRANCH_IDS, ...branchIds };
     AppState.visibleColumns = colVis;
     AppState.quarters = quarters;
     AppState.groups = groups;
 
-    // Seed default groups if none exist in Firestore
-    if (groups.length === 0 && DEFAULT_GROUPS.length > 0) {
-      for (const g of DEFAULT_GROUPS) {
-        const savedId = await DataStore.saveGroup({ ...g });
-        AppState.groups.push({ ...g, id: savedId });
+    // Seed default groups if they don't already exist in Firestore
+    for (const dg of DEFAULT_GROUPS) {
+      const exists = AppState.groups.some(g => g.name === dg.name);
+      if (!exists) {
+        const savedId = await DataStore.saveGroup({ ...dg });
+        AppState.groups.push({ ...dg, id: savedId });
       }
     }
 
-    // If first run, save defaults to Firestore
-    if (Object.keys(companyMap).length === 0) {
-      DataStore.saveCompanyMap(DEFAULT_COMPANY_MAP);
+    // Merge defaults into Firestore (ensures new entries are added)
+    const mergedCompanyMap = { ...DEFAULT_COMPANY_MAP, ...companyMap };
+    if (Object.keys(mergedCompanyMap).length > Object.keys(companyMap).length) {
+      AppState.companyMap = mergedCompanyMap;
+      DataStore.saveCompanyMap(mergedCompanyMap);
     }
-    if (Object.keys(branchIds).length === 0) {
-      DataStore.saveBranchIds(DEFAULT_BRANCH_IDS);
+    const mergedBranchIds = { ...DEFAULT_BRANCH_IDS, ...branchIds };
+    if (Object.keys(mergedBranchIds).length > Object.keys(branchIds).length) {
+      AppState.branchIds = mergedBranchIds;
+      DataStore.saveBranchIds(mergedBranchIds);
     }
 
     // Init all modules
