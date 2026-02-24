@@ -377,10 +377,20 @@ const App = (() => {
     AppState.quarters = quarters;
     AppState.groups = groups;
 
-    // Create default groups if they don't exist yet
+    // Sync default groups to Firestore (create or update branches)
     for (const dg of DEFAULT_GROUPS) {
-      const exists = AppState.groups.some(g => g.name === dg.name);
-      if (!exists) {
+      const existing = AppState.groups.find(g => g.name === dg.name);
+      if (existing) {
+        // Update if default has more branches than what's stored
+        const defaultSet = new Set(dg.branches);
+        const existingSet = new Set(existing.branches || []);
+        const missing = dg.branches.filter(b => !existingSet.has(b));
+        if (missing.length > 0) {
+          existing.branches = [...new Set([...(existing.branches || []), ...dg.branches])];
+          existing.companies = [...new Set([...(existing.companies || []), ...(dg.companies || [])])];
+          await DataStore.saveGroup(existing);
+        }
+      } else {
         const savedId = await DataStore.saveGroup({ ...dg });
         AppState.groups.push({ ...dg, id: savedId });
       }
